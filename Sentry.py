@@ -34,7 +34,7 @@ def main():
         if check_url(args.url):
             print(f"The provide url: {args.url} is valid!")
         else:
-            print(f"The provided url: {args.url} sucks! Try again:)")
+            print(f"The provided url: {args.url} sucks! Try again ):( ")
 
 
 if __name__ == "__main__":
