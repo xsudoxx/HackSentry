@@ -1,5 +1,11 @@
 import unittest
-from HackSentry import check_url
+import sys
+import os
+
+# Include the path to the parent directory
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from Sentry import check_url
 
 class TestRegex(unittest.TestCase):
     def test_valid_urls(self):
