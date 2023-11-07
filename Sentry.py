@@ -1,5 +1,6 @@
 import argparse
 import re
+import requests
 
 def print_sentry_gun():
     print("   __,_____")
@@ -8,8 +9,6 @@ def print_sentry_gun():
     print("/#_#_#_#_#_#")
     print("#_#_#_#_#_#_#")
     print("'-'-'-'-'-'-'")
-
-
 
 def check_url(url, port=None, wordlist=None):
     regex = re.compile(
@@ -22,33 +21,45 @@ def check_url(url, port=None, wordlist=None):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
     if re.match(regex, url):
-        parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url)
         if wordlist and port:
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
-                domain = parsed_url.group('domain')
+                domain, path = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url).group('domain', 'path')
                 modified_url = f"{domain}:{port}/{endpoint.lstrip('/')}"
                 print(f"The provided URL: {url} is valid!")
-                print(f"The modified URL: {parsed_url.group('protocol')}{modified_url}")
+                print(f"The modified URL: {modified_url}")
+                check_status_and_write_to_file(modified_url)
         elif wordlist:
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
-                domain = parsed_url.group('domain')
+                domain, _ = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url).group('domain', 'path')
                 modified_url = f"{domain}/{endpoint.lstrip('/')}"
                 print(f"The provided URL: {url} is valid!")
-                print(f"The modified URL: {parsed_url.group('protocol')}{modified_url}")
+                print(f"The modified URL: {modified_url}")
+                check_status_and_write_to_file(modified_url)
         elif port:
+            parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url)
             if parsed_url:
-                domain = parsed_url.group('domain')
-                modified_url = f"{domain}:{port}{parsed_url.group('path')}"
+                modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}{parsed_url.group('path')}"
                 print(f"The provided URL: {url} is valid!")
-                print(f"The modified URL: {parsed_url.group('protocol')}{modified_url}")
+                print(f"The modified URL: {modified_url}")
+                check_status_and_write_to_file(modified_url)
         else:
             print(f"The provided URL: {url} is valid!")
+            check_status_and_write_to_file(url)
     else:
         print(f"The provided URL: {url} did not pass the initial inspection.")
+
+def check_status_and_write_to_file(modified_url):
+    response = requests.get(modified_url)
+    if response.status_code == 200:
+        with open('output.txt', 'a') as file:
+            file.write(modified_url + '\n')
+
+check_url('http://example.com', 8080, 'wordlist.txt')
+
 
 def check_urls_from_domains(domains, port=None,wordlist=None):
     with open(domains, 'r') as f:
@@ -56,6 +67,11 @@ def check_urls_from_domains(domains, port=None,wordlist=None):
             url = line.strip()
             check_url(url, port,wordlist)
 
+def check_status_and_write_to_file(modified_url):
+    response = requests.get(modified_url)
+    if response.status_code == 200:
+        with open('output.txt', 'a') as file:
+            file.write(modified_url + '\n')
 
 def main():
     print_sentry_gun()
@@ -79,10 +95,6 @@ def main():
         check_urls_from_domains(args.domains, args.port)
     elif args.domains:
         check_urls_from_domains(args.domains)
-            
-
-
-
 
 if __name__ == "__main__":
     main()
