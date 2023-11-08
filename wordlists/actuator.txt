@@ -1,0 +1,10 @@
+/actuator
+/actuator/health
+/actuator/info
+/actuator/metrics
+/actuator/beans
+/actuator/env
+/actuator/mappings
+/actuator/conditions
+/actuator/configprops
+/actuator/loggers
