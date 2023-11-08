@@ -96,7 +96,7 @@ def check_status_and_write_to_file(modified_url, output_file=None):
         else:
             print(f"The URL: {modified_url} returned a status code of {response.status_code}.")
     except requests.exceptions.SSLError as e:
-        print(f"The URL: {modified_url} is not accessible due to an SSL error. Error: {e}")
+        print(f"The URL: {modified_url} is not accessible")
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="HackSentry flag options below")
