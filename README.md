@@ -19,7 +19,7 @@ HackSentry is a Python script designed to analyze and test the security of URLs 
 
 ```bash
 python3 Sentry.py -u <url> -d <domains> -p <port> -w <wordlist> -o <output>
-
+```
 Replace the placeholders with your desired values:
 
 <url>: The single URL to be analyzed.
@@ -27,7 +27,7 @@ Replace the placeholders with your desired values:
 <port>: The port number for querying each URL.
 <wordlist>: The file containing endpoints to test against the URLs.
 <output>: The output file for recording the results.
-```
+
 ## Examples
 ```
 python3 Sentry.py -u https://www.example.com -p 443 -w wordlist.txt -o results.txt
