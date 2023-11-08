@@ -29,11 +29,23 @@ Replace the placeholders with your desired values:
 <output>: The output file for recording the results.
 
 ## Examples
-```
-python3 Sentry.py -u https://www.example.com -p 443 -w wordlist.txt -o results.txt
-```
-This command checks the provided URL https://www.example.com with port 443, using the wordlist.txt file, and outputs the results to results.txt.
-
+To check a single URL without any modifications:
+````
+python3 Sentry.py -u https://www.example.com
+````
+To check a list of domains from a file and output the results to a file:
+````
+python3 Sentry.py -d domains.txt -o output.txt
+````
+To check a single URL with a specified port and wordlist:
+````
+python3 Sentry.py -u https://www.example.com -p 8080 -w endpoints.txt
+````
+To check a list of domains with a specified port and wordlist and output the results to a file:
+````
+python3 Sentry.py -d domains.txt -p 443 -w endpoints.txt -o results.txt
+````
+Feel free to adjust the parameters based on your specific testing needs.
 ## Contributing
 Contributions are always welcome! If you have any improvements or feature suggestions, please feel free to create a pull request
 
