@@ -97,54 +97,30 @@ def check_status_and_write_to_file(modified_url, output_file=None):
     except requests.exceptions.SSLError as e:
         print(f"The URL: {modified_url} is not accessible due to an SSL error. Error: {e}")
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="HackSentry flag options below")
+    parser.add_argument('-u', '--url', type=str, help="Single URL")
+    parser.add_argument('-d', '--domains', type=str, help='Wordlists of domains to iterate through')
+    parser.add_argument('-p', '--port', type=int, help='port number to query on each url', default=None)
+    parser.add_argument('-w', '--wordlist', type=str, help='This is every endpoint we want to query against')
+    parser.add_argument('-o', '--output', type=str, help='Use this to output results to a file of your choice', default=None)
+    return parser.parse_args()
 
+def handle_args(args):
+    if args.url:
+        if args.domains:
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
+        else:
+            check_url(args.url, args.port, args.wordlist, args.output)
 
 def main():
     try:
         print_sentry_gun()
-        
-        parser = argparse.ArgumentParser(description="HackSentry flag options below")
-        parser.add_argument('-u','--url',type=str,help="Single URL")
-        parser.add_argument('-d','--domains',type=str,help='Wordlists of domains to iterate through')
-        parser.add_argument('-p','--port',type=int,help='port number to query on each url',default=None)
-        parser.add_argument('-w','--wordlist',type=str,help='This is every endpoint we want to query against')
-        parser.add_argument('-o','--output', type=str, help='Use this to output results to a file of your choice',default=None)
-        args = parser.parse_args()
-
-        #This is starting our url logic
-        if args.url and args.port and args.wordlist and args.output:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.port and args.wordlist:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.port and args.output:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.port:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.wordlist and args.output:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.wordlist:
-            check_url(args.url,args.port,args.wordlist,args.output)
-        elif args.url and args.output:
-            check_url(args.url,args.port,args.wordlist,args.output)#check this
-        elif args.url:
-            check_url(args.url)
-        # This is start our domains logic
-        elif args.domains and args.port and args.wordlist and args.output:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
-        elif args.domains and args.port and args.wordlist:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
-        elif args.domains and args.port and args.output:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
-        elif args.domains and args.port:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
-        elif args.domains and args.output:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
-        elif args.domains:
-            check_urls_from_domains(args.domains)
+        args = parse_arguments()
+        handle_args(args)
     except KeyboardInterrupt:
         print("KeyboardInterrupt: Script execution stopped.")
         sys.exit(0)
 
 if __name__ == "__main__":
     main()
-
