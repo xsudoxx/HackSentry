@@ -75,11 +75,13 @@ def check_url(url, port=None, wordlist=None, output=None):
     else:
         print(f"The provided URL: {url} did not pass the initial inspection.")
 
-def check_urls_from_domains(domains, port=None,wordlist=None,output=None):
+def check_urls_from_domains(domains, port=None, wordlist=None, output=None):
     with open(domains, 'r') as f:
-        for line in f:
-            url = line.strip()
-            check_url(url, port,wordlist,output)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:  # Limiting to 20 workers
+            urls = [line.strip() for line in f]  # Ensure no leading or trailing whitespaces
+            futures = [executor.submit(check_url, url, port, wordlist, output) for url in urls]
+            concurrent.futures.wait(futures)
+
 
 def check_status_and_write_to_file(modified_url, output_file=None):
     try:
@@ -109,9 +111,8 @@ def handle_args(args):
     if args.url and not args.domains:
         check_url(args.url, args.port, args.wordlist, args.output)
     elif args.domains and not args.url:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-            futures = [executor.submit(check_url, url, args.port, args.wordlist, args.output) for url in open(args.domains, 'r')]
-            concurrent.futures.wait(futures)
+        check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
+
     else:
         print("Please provide either a single URL using -u or a file with domains using -d.")
 
