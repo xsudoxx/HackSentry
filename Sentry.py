@@ -106,13 +106,15 @@ def parse_arguments():
     return parser.parse_args()
 
 def handle_args(args):
-    if args.url:
-        if args.domains:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-                futures = [executor.submit(check_url, url, args.port, args.wordlist, args.output) for url in open(args.domains, 'r')]
-                concurrent.futures.wait(futures)
-        else:
-            check_url(args.url, args.port, args.wordlist, args.output)
+    if args.url and not args.domains:
+        check_url(args.url, args.port, args.wordlist, args.output)
+    elif args.domains and not args.url:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+            futures = [executor.submit(check_url, url, args.port, args.wordlist, args.output) for url in open(args.domains, 'r')]
+            concurrent.futures.wait(futures)
+    else:
+        print("Please provide either a single URL using -u or a file with domains using -d.")
+
 
 def main():
     try:
