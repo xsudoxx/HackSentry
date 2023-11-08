@@ -2,6 +2,7 @@ import argparse
 import re
 import requests
 import sys
+import concurrent.futures
 
 def print_sentry_gun():
     print("   __,_____")
@@ -107,7 +108,9 @@ def parse_arguments():
 def handle_args(args):
     if args.url:
         if args.domains:
-            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+                futures = [executor.submit(check_url, url, args.port, args.wordlist, args.output) for url in open(args.domains, 'r')]
+                concurrent.futures.wait(futures)
         else:
             check_url(args.url, args.port, args.wordlist, args.output)
 
