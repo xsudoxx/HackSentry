@@ -11,7 +11,7 @@ def print_sentry_gun():
     print("#_#_#_#_#_#_#")
     print("'-'-'-'-'-'-'")
 
-def check_url(url, port=None, wordlist=None):
+def check_url(url, port=None, wordlist=None, output=None):
     regex = re.compile(
         r'^(?:http|ftp)s?://'  # http:// or https://
         r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
@@ -22,7 +22,7 @@ def check_url(url, port=None, wordlist=None):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
     if re.match(regex, url):
-        if wordlist and port:
+        if wordlist and port and output:
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
@@ -31,48 +31,73 @@ def check_url(url, port=None, wordlist=None):
                     modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}/{endpoint.lstrip('/')}"
                     print(f"The provided URL: {url} is valid!")
                     print(f"The modified URL: {modified_url}")
-                    check_status_and_write_to_file(modified_url)
-        elif wordlist:
+                    check_status_and_write_to_file(modified_url,output)
+
+        elif wordlist and port:
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
                 parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<wordlist>.*)$', url)
                 if parsed_url:
-                    modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}/{endpoint.lstrip('/')}"
+                    modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}/{endpoint.lstrip('/')}"
                     print(f"The provided URL: {url} is valid!")
                     print(f"The modified URL: {modified_url}")
-                    check_status_and_write_to_file(modified_url)
+                    check_status_and_write_to_file(modified_url,output)
+        elif wordlist:
+            with open(wordlist, 'r') as f:
+                endpoints = f.read().split()
+            for endpoint in endpoints:
+                parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>/.*)$', url)
+                if parsed_url:
+                    protocol = parsed_url.group('protocol')
+                    domain = parsed_url.group('domain')
+                    path = endpoint.lstrip('/')
+                    modified_url = f"{protocol}{domain}/{path}"
+                    if port:
+                        modified_url = f"{protocol}{domain}:{port}/{path}"
+                    print(f"The provided URL: {url} is valid!")
+                    print(f"The modified URL: {modified_url}")
+                    check_status_and_write_to_file(modified_url, output)
+
         elif port:
-            parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<wordlist>.*)$', url)
+            parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?::\d+)?(?P<wordlist>.*)$', url)
             if parsed_url:
-                modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}{parsed_url.group('wordlist')}"
+                domain = parsed_url.group('domain')
+                modified_url = f"{parsed_url.group('protocol')}{domain}:{port}{parsed_url.group('wordlist')}"
                 print(f"The provided URL: {url} is valid!")
                 print(f"The modified URL: {modified_url}")
-                check_status_and_write_to_file(modified_url)
+                check_status_and_write_to_file(modified_url, output)
+
+
+
         else:
             print(f"The provided URL: {url} is valid!")
             check_status_and_write_to_file(url)
     else:
         print(f"The provided URL: {url} did not pass the initial inspection.")
 
-def check_status_and_write_to_file(modified_url):
-    response = requests.get(modified_url)
-    if response.status_code == 200:
-        with open('output.txt', 'a') as file:
-            file.write(modified_url + '\n')
-
-
-def check_urls_from_domains(domains, port=None,wordlist=None):
+def check_urls_from_domains(domains, port=None,wordlist=None,output=None):
     with open(domains, 'r') as f:
         for line in f:
             url = line.strip()
-            check_url(url, port,wordlist)
+            check_url(url, port,wordlist,output)
 
-def check_status_and_write_to_file(modified_url):
-    response = requests.get(modified_url)
-    if response.status_code == 200:
-        with open('output.txt', 'a') as file:
-            file.write(modified_url + '\n')
+def check_status_and_write_to_file(modified_url, output_file=None):
+    try:
+        response = requests.get(modified_url)
+        if response.status_code == 200:
+            if output_file:
+                with open(output_file, 'a') as file:
+                    file.write(modified_url + '\n')
+                print(f"The URL: {modified_url} returned a status code of 200. Written to file.")
+            else:
+                print(f"The URL: {modified_url} returned a status code of 200.")
+        else:
+            print(f"The URL: {modified_url} returned a status code of {response.status_code}.")
+    except requests.exceptions.SSLError as e:
+        print(f"The URL: {modified_url} is not accessible due to an SSL error. Error: {e}")
+
+
 
 def main():
     try:
@@ -83,18 +108,37 @@ def main():
         parser.add_argument('-d','--domains',type=str,help='Wordlists of domains to iterate through')
         parser.add_argument('-p','--port',type=int,help='port number to query on each url',default=None)
         parser.add_argument('-w','--wordlist',type=str,help='This is every endpoint we want to query against')
+        parser.add_argument('-o','--output', type=str, help='Use this to output results to a file of your choice',default=None)
         args = parser.parse_args()
 
-        if args.url and args.port and args.wordlist:
-            check_url(args.url,args.port,args.wordlist)
+        #This is starting our url logic
+        if args.url and args.port and args.wordlist and args.output:
+            check_url(args.url,args.port,args.wordlist,args.output)
+        elif args.url and args.port and args.wordlist:
+            check_url(args.url,args.port,args.wordlist,args.output)
+        elif args.url and args.port and args.output:
+            check_url(args.url,args.port,args.wordlist,args.output)
         elif args.url and args.port:
-            check_url(args.url, args.port)
+            check_url(args.url,args.port,args.wordlist,args.output)
+        elif args.url and args.wordlist and args.output:
+            check_url(args.url,args.port,args.wordlist,args.output)
+        elif args.url and args.wordlist:
+            check_url(args.url,args.port,args.wordlist,args.output)
+        elif args.url and args.output:
+            check_url(args.url,args.port,args.wordlist,args.output)#check this
         elif args.url:
             check_url(args.url)
+        # This is start our domains logic
+        elif args.domains and args.port and args.wordlist and args.output:
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
         elif args.domains and args.port and args.wordlist:
-            check_urls_from_domains(args.domains, args.port, args.wordlist)
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
+        elif args.domains and args.port and args.output:
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
         elif args.domains and args.port:
-            check_urls_from_domains(args.domains, args.port)
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
+        elif args.domains and args.output:
+            check_urls_from_domains(args.domains, args.port, args.wordlist, args.output)
         elif args.domains:
             check_urls_from_domains(args.domains)
     except KeyboardInterrupt:
