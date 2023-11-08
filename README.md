@@ -1,4 +1,5 @@
 # HackSentry <img src ="https://github.com/xsudoxx/HackSentry/assets/127046919/46b2cc1d-2ff0-4e44-ae5b-5e15f8f75f71" width = "75" height = "120"/>
+![Visitor Count](https://profile-counter.glitch.me/xsudoxx/count.svg)
 
 HackSentry is a Python script designed to analyze and test the security of URLs and domains. It performs various checks and manipulations on the provided URLs, allowing users to monitor their accessibility and status codes. The script is particularly useful for security analysts and penetration testers.
 
