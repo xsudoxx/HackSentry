@@ -1,6 +1,7 @@
 import argparse
 import re
 import requests
+import sys
 
 def print_sentry_gun():
     print("   __,_____")
@@ -25,24 +26,26 @@ def check_url(url, port=None, wordlist=None):
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
-                domain, path = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url).group('domain', 'path')
-                modified_url = f"{domain}:{port}/{endpoint.lstrip('/')}"
-                print(f"The provided URL: {url} is valid!")
-                print(f"The modified URL: {modified_url}")
-                check_status_and_write_to_file(modified_url)
+                parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<wordlist>.*)$', url)
+                if parsed_url:
+                    modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}/{endpoint.lstrip('/')}"
+                    print(f"The provided URL: {url} is valid!")
+                    print(f"The modified URL: {modified_url}")
+                    check_status_and_write_to_file(modified_url)
         elif wordlist:
             with open(wordlist, 'r') as f:
                 endpoints = f.read().split()
             for endpoint in endpoints:
-                domain, _ = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url).group('domain', 'path')
-                modified_url = f"{domain}/{endpoint.lstrip('/')}"
-                print(f"The provided URL: {url} is valid!")
-                print(f"The modified URL: {modified_url}")
-                check_status_and_write_to_file(modified_url)
+                parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<wordlist>.*)$', url)
+                if parsed_url:
+                    modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}/{endpoint.lstrip('/')}"
+                    print(f"The provided URL: {url} is valid!")
+                    print(f"The modified URL: {modified_url}")
+                    check_status_and_write_to_file(modified_url)
         elif port:
-            parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<path>.*)$', url)
+            parsed_url = re.match(r'^(?P<protocol>https?://)(?P<domain>[^/:]+)(?P<wordlist>.*)$', url)
             if parsed_url:
-                modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}{parsed_url.group('path')}"
+                modified_url = f"{parsed_url.group('protocol')}{parsed_url.group('domain')}:{port}{parsed_url.group('wordlist')}"
                 print(f"The provided URL: {url} is valid!")
                 print(f"The modified URL: {modified_url}")
                 check_status_and_write_to_file(modified_url)
@@ -58,8 +61,6 @@ def check_status_and_write_to_file(modified_url):
         with open('output.txt', 'a') as file:
             file.write(modified_url + '\n')
 
-check_url('http://example.com', 8080, 'wordlist.txt')
-
 
 def check_urls_from_domains(domains, port=None,wordlist=None):
     with open(domains, 'r') as f:
@@ -74,27 +75,31 @@ def check_status_and_write_to_file(modified_url):
             file.write(modified_url + '\n')
 
 def main():
-    print_sentry_gun()
-    
-    parser = argparse.ArgumentParser(description="HackSentry flag options below")
-    parser.add_argument('-u','--url',type=str,help="Single URL")
-    parser.add_argument('-d','--domains',type=str,help='Wordlists of domains to iterate through')
-    parser.add_argument('-p','--port',type=int,help='port number to query on each url',default=None)
-    parser.add_argument('-w','--wordlist',type=str,help='This is every endpoint we want to query against')
-    args = parser.parse_args()
+    try:
+        print_sentry_gun()
+        
+        parser = argparse.ArgumentParser(description="HackSentry flag options below")
+        parser.add_argument('-u','--url',type=str,help="Single URL")
+        parser.add_argument('-d','--domains',type=str,help='Wordlists of domains to iterate through')
+        parser.add_argument('-p','--port',type=int,help='port number to query on each url',default=None)
+        parser.add_argument('-w','--wordlist',type=str,help='This is every endpoint we want to query against')
+        args = parser.parse_args()
 
-    if args.url and args.port and args.wordlist:
-        check_url(args.url,args.port,args.wordlist)
-    elif args.url and args.port:
-        check_url(args.url, args.port)
-    elif args.url:
-        check_url(args.url)
-    elif args.domains and args.port and args.wordlist:
-        check_urls_from_domains(args.domains, args.port, args.wordlist)
-    elif args.domains and args.port:
-        check_urls_from_domains(args.domains, args.port)
-    elif args.domains:
-        check_urls_from_domains(args.domains)
+        if args.url and args.port and args.wordlist:
+            check_url(args.url,args.port,args.wordlist)
+        elif args.url and args.port:
+            check_url(args.url, args.port)
+        elif args.url:
+            check_url(args.url)
+        elif args.domains and args.port and args.wordlist:
+            check_urls_from_domains(args.domains, args.port, args.wordlist)
+        elif args.domains and args.port:
+            check_urls_from_domains(args.domains, args.port)
+        elif args.domains:
+            check_urls_from_domains(args.domains)
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt: Script execution stopped.")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
