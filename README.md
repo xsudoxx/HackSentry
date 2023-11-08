@@ -1,4 +1,9 @@
-# HackSentry <img src ="https://github.com/xsudoxx/HackSentry/assets/127046919/46b2cc1d-2ff0-4e44-ae5b-5e15f8f75f71" width = "75" height = "120"/>
+<p align="center">
+  <a href="https://github.com/xsudoxx/HackSentry" rel="noopener" target="_blank"><img width="150" height="133" src="https://mui.com/static/logo.svg](https://github.com/xsudoxx/HackSentry/assets/127046919/46b2cc1d-2ff0-4e44-ae5b-5e15f8f75f71" alt="MUI Core logo"></a>
+</p>
+
+<h1 align="center">HackSentry</h1>
+
 HackSentry is a Python script designed to analyze and test the security of URLs and domains. It performs various checks and manipulations on the provided URLs, allowing users to monitor their accessibility and status codes. The script is particularly useful for security analysts and penetration testers.
 
 # Visitor Count ![Visitor Count](https://profile-counter.glitch.me/xsudoxx/count.svg)
