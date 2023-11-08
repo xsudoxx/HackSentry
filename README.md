@@ -4,7 +4,7 @@
 
 <h1 align="center">HackSentry</h1>
 
-HackSentry is a Python script designed to analyze and test the security of URLs and domains. It performs various checks and manipulations on the provided URLs, allowing users to monitor their accessibility and status codes. The script is particularly useful for security analysts and penetration testers.
+HackSentry is a Python script specifically designed to enhance the capabilities of purple teams in analyzing and testing the security of URLs and domains. The script empowers security analysts and penetration testers to identify potential vulnerabilities in web applications by performing various checks and manipulations on the provided URLs. By monitoring accessibility and tracking status codes, HackSentry offers critical insights to bolster the defense of your network.
 
 <p align="center" style="font-family: Arial, sans-serif; color: #333;">
   <span style="font-size: 96px; font-weight: bold;">Visitor Count:</span>
