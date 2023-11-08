@@ -68,8 +68,6 @@ def check_url(url, port=None, wordlist=None, output=None):
                 print(f"The modified URL: {modified_url}")
                 check_status_and_write_to_file(modified_url, output)
 
-
-
         else:
             print(f"The provided URL: {url} is valid!")
             check_status_and_write_to_file(url)
